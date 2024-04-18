@@ -5,7 +5,9 @@ description = "Default template for PDM package"
 authors = [
     {name = "Pratik Jindal", email = "117007380+jindalpratik@users.noreply.github.com"},
 ]
-dependencies = []
+dependencies = [
+    "typer>=0.12.3",
+]
 requires-python = "==3.12.*"
 readme = "README.md"
 license = {text = "MIT"}
@@ -13,3 +15,13 @@ license = {text = "MIT"}
 
 [tool.pdm]
 distribution = false
+
+[tool.pdm.dev-dependencies]
+lint = [
+    "black>=24.4.0",
+    "ruff>=0.3.7",
+]
+
+[tool.pdm.scripts]
+lint = "ruff check"
+app = "python src/jxlconvert"
