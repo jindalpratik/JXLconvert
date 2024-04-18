@@ -1,7 +1,9 @@
-import typer
 import os
-import subprocess
 import shutil
+import subprocess
+from pathlib import Path
+
+import typer
 from rich.progress import Progress
 
 app = typer.Typer()
@@ -14,12 +16,12 @@ IMGEXT = ["jpg", "jpeg", "png", "gif"]
 
 
 @app.command()
-def dirs():
+def dirs():  # noqa: C901
     """
-    Command to encode images into jpegxl
+    Encode images into jpegxl
     """
 
-    os.makedirs(TEMPDIR, exist_ok=True)
+    Path(TEMPDIR).mkdir(parents=True, exist_ok=True)
     os.chdir(TEMPDIR)
 
     # Initialize progress bar
@@ -59,21 +61,20 @@ def dirs():
                             # time.sleep(0.05)
 
                         if file.lower().endswith("." + bext):
-                            book_path = os.path.join(root, file)
+                            book_path = Path(root) / file
 
                             shutil.move(
                                 book_path,
-                                os.path.join(TEMPDIR, os.path.basename(book_path)),
+                                Path(TEMPDIR) / Path(book_path).name,
                             )
 
                             subprocess.run(
-                                ["7z", "x", os.path.basename(book_path)],
-                                shell=True,
+                                ["7z", "x", Path(book_path).name],  # noqa: S603, S607
                                 check=True,
                                 stdout=subprocess.DEVNULL,
                             )
 
-                            os.remove(os.path.basename(book_path))
+                            Path(Path(book_path).name).unlink()
                             shutil.rmtree("./__MACOSX/", ignore_errors=True)
 
                             # subprocess.run(["jpegoptim", "-s", "*.jpg"], stderr=subprocess.DEVNULL, shell=True)
@@ -94,7 +95,7 @@ def dirs():
                                 #         shell=True,
                                 #     ).stdout.strip()
 
-                                for new_root, new_dirs, new_files in os.walk("."):
+                                for new_root, _new_dirs, new_files in os.walk("."):
                                     first_image = True
 
                                     for new_file in new_files:
@@ -110,25 +111,27 @@ def dirs():
                                             progress.update(task3, advance=1)
 
                                         if new_file.lower().endswith("." + iext):
-                                            file_path = os.path.join(new_root, new_file)
+                                            file_path = Path(new_root) / new_file
 
+                                            #TODO: Remove usage of os.path.splittext
                                             # fmt: off
                                             os.system(
-                                                f"{jxl_command} --quiet \"{file_path}\" \"{os.path.splitext(file_path)[0]}.jxl\" && del /F /Q \"{file_path}\""
+                                                f"{jxl_command} --quiet \"{file_path}\" \"{os.path.splitext(file_path)[0]}.jxl\" && del /F /Q \"{file_path}\""  # noqa: S605, PTH122
                                             )
                                             # fmt: on
 
                                     progress.remove_task(task3)
 
+                            #TODO: Remove usage of os.path.splittext
                             subprocess.run(
-                                [
+                                [  # noqa: S607
                                     "7z",
                                     "a",
                                     "-tzip",
-                                    f"{os.path.splitext(book_path)[0]}.cbz",
+                                    f"{os.path.splitext(book_path)[0]}.cbz",  # noqa: PTH122
                                     "*",
                                 ],
-                                shell=True,
+                                shell=True,  # noqa: S602
                                 check=True,
                                 stdout=subprocess.DEVNULL,
                             )
