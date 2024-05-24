@@ -17,8 +17,6 @@ IMGEXT = ["jpg", "jpeg", "png", "gif"]
 CJXLLOSSY = "cjxl"
 CJXLLOSSLESS = "cjxl -d 0.0"
 
-ps = PngStrategy(jxl_folder= TEMPDIR, cjxl_lossy= CJXLLOSSY, cjxl_lossless=CJXLLOSSLESS)
-
 @app.command()
 def dirs():  # noqa: C901, PLR0912 TODO : Reduce the complexity by using more functions and follow PLR0912
     """
@@ -87,7 +85,7 @@ def dirs():  # noqa: C901, PLR0912 TODO : Reduce the complexity by using more fu
                             jxl_command = "cjxl -j 1"
 
                             if iext == "png":
-                                jxl_command = ps.png_strategy()
+                                jxl_command = PngStrategy().png_strategy(jxl_folder=TEMPDIR, cjxl_lossy=CJXLLOSSY, cjxl_lossless=CJXLLOSSLESS)
 
                             for new_root, _new_dirs, new_files in os.walk("."):
                                 first_image = True

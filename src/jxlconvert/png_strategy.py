@@ -5,17 +5,12 @@ from pathlib import Path
 
 
 class PngStrategy:
-    def __init__(self, jxl_folder, cjxl_lossy, cjxl_lossless):
+    def __init__(self):
         self.sample_size = 3
         self.min_png_files = 15
 
-        # Input parameters
-        self.jxl_folder = jxl_folder
-        self.cjxl_lossy = cjxl_lossy
-        self.cjxl_lossless = cjxl_lossless
-
-    def __get_png_files(self):
-        return list(Path(self.jxl_folder).rglob("*.png"))
+    def __get_png_files(self, jxl_folder):
+        return list(Path(jxl_folder).rglob("*.png"))
 
     def __get_random_number(self, start, end):
         return random.randint(  # noqa: S311 Disable requirement of cryptographic random int generator
@@ -34,18 +29,18 @@ class PngStrategy:
             args=args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
 
-    def png_strategy(self):  # noqa: C901
+    def png_strategy(self, jxl_folder, cjxl_lossy, cjxl_lossless):  # noqa: C901
 
         try:
             # Get the png files in the tmp directory and store them in a list
-            png_files = self.__get_png_files()
+            png_files = self.__get_png_files(jxl_folder= jxl_folder)
 
             # Return default values if png files less than minimum required
             if len(png_files) == 0:
-                return self.cjxl_lossy
+                return cjxl_lossy
 
             if len(png_files) <= self.min_png_files:
-                return self.cjxl_lossless
+                return cjxl_lossless
 
             random_png_files = []
 
@@ -61,8 +56,8 @@ class PngStrategy:
                 lossy_path = Path(str(base_path).replace(".png", "-lossy.jxl").strip('\n'))
                 lossless_path = Path(str(base_path).replace(".png", "-lossless.jxl").strip('\n'))
 
-                self.__run_jxl_command(self.cjxl_lossy, base_path, lossy_path)
-                self.__run_jxl_command(self.cjxl_lossless, base_path, lossless_path)
+                self.__run_jxl_command(cjxl_lossy, base_path, lossy_path)
+                self.__run_jxl_command(cjxl_lossless, base_path, lossless_path)
 
                 # Wait for the files to be fully written to disk
                 while not lossy_path.exists() or not lossless_path.exists():
@@ -77,7 +72,7 @@ class PngStrategy:
                 )
         except Exception as _e:
             # Use lossless if there is an error
-            return self.cjxl_lossless
+            return cjxl_lossless
         else:
             # Use lossy
             # TODO: Move this into a seperate function
@@ -85,9 +80,9 @@ class PngStrategy:
                 for file in converted_files:
                     Path.unlink(file['base']['path'])
                     Path.unlink(file['lossless']['path'])
-                return self.cjxl_lossy
+                return cjxl_lossy
 
             for file in converted_files:
                 Path.unlink(file['base']['path'])
                 Path.unlink(file['lossy']['path'])
-            return self.cjxl_lossless
+            return cjxl_lossless
