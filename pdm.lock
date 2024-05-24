@@ -5,7 +5,7 @@
 groups = ["default", "lint"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:08aeddc74abc428c529a54bfe0da92943a3c125451d40899b0f78abc8427a7bd"
+content_hash = "sha256:3fd0d4c262745e2521c5a8bc3cf00707b3caa109794fcb3966e157d3a08be51c"
 
 [[package]]
 name = "black"
