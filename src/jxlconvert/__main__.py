@@ -15,7 +15,7 @@ BOOKEXT = ["cbz", "cbr", "cb7", "cbt"]
 IMGEXT = ["jpg", "jpeg", "png", "gif"]
 
 @app.command()
-def dirs():  # noqa: C901
+def dirs():  # noqa: C901, PLR0912 TODO : Reduce the complexity by using more functions and follow PLR0912
     """
     Encode images into jpegxl
     """
@@ -111,7 +111,7 @@ def dirs():  # noqa: C901
                                     if new_file.lower().endswith("." + iext):
                                         file_path = Path(new_root) / new_file
 
-                                        #TODO: Remove usage of os.path.splittext
+                                        #TODO: Remove usage of os.path.splittext also remove the usage of del and use something that is system agnostic
                                         # fmt: off
                                         os.system(
                                             f"{jxl_command} --quiet \"{file_path}\" \"{os.path.splitext(file_path)[0]}.jxl\" && del /F /Q \"{file_path}\""  # noqa: S605, PTH122
