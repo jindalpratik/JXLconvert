@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 
 import typer
+from png_strategy import PngStrategy
 from rich.progress import Progress
 
 app = typer.Typer()
@@ -13,6 +14,10 @@ BOOKDIR = r""
 TEMPDIR = r""
 BOOKEXT = ["cbz", "cbr", "cb7", "cbt"]
 IMGEXT = ["jpg", "jpeg", "png", "gif"]
+CJXLLOSSY = "cjxl"
+CJXLLOSSLESS = "cjxl -d 0.0"
+
+ps = PngStrategy(jxl_folder= TEMPDIR, cjxl_lossy= CJXLLOSSY, cjxl_lossless=CJXLLOSSLESS)
 
 @app.command()
 def dirs():  # noqa: C901, PLR0912 TODO : Reduce the complexity by using more functions and follow PLR0912
@@ -81,17 +86,8 @@ def dirs():  # noqa: C901, PLR0912 TODO : Reduce the complexity by using more fu
                         for iext in IMGEXT:
                             jxl_command = "cjxl -j 1"
 
-                            # TODO: convert get-png-strategy into an python module
-                            # if iext == "png":
-                            #     jxl_command = subprocess.run(
-                            #         [
-                            #             "node",
-                            #             r".\get-png-strategy.js",
-                            #         ],
-                            #         capture_output=True,
-                            #         text=True,
-                            #         shell=True,
-                            #     ).stdout.strip()
+                            if iext == "png":
+                                jxl_command = ps.png_strategy()
 
                             for new_root, _new_dirs, new_files in os.walk("."):
                                 first_image = True
