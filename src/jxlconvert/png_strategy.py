@@ -33,7 +33,7 @@ class PngStrategy:
 
         try:
             # Get the png files in the tmp directory and store them in a list
-            png_files = self.__get_png_files(jxl_folder= jxl_folder)
+            png_files = self.__get_png_files(jxl_folder=jxl_folder)
 
             # Return default values if png files less than minimum required
             if len(png_files) == 0:
@@ -53,8 +53,12 @@ class PngStrategy:
             converted_files = []
             for i in random_png_files:
                 base_path = png_files[i]
-                lossy_path = Path(str(base_path).replace(".png", "-lossy.jxl").strip('\n'))
-                lossless_path = Path(str(base_path).replace(".png", "-lossless.jxl").strip('\n'))
+                lossy_path = Path(
+                    str(base_path).replace(".png", "-lossy.jxl").strip("\n")
+                )
+                lossless_path = Path(
+                    str(base_path).replace(".png", "-lossless.jxl").strip("\n")
+                )
 
                 self.__run_jxl_command(cjxl_lossy, base_path, lossy_path)
                 self.__run_jxl_command(cjxl_lossless, base_path, lossless_path)
@@ -65,9 +69,18 @@ class PngStrategy:
 
                 converted_files.append(
                     {
-                        'base': {'size': Path(base_path).stat().st_size, 'path': base_path},
-                        'lossy': {'size': Path(lossy_path).stat().st_size, 'path': lossy_path},
-                        'lossless': {'size': Path(lossless_path).stat().st_size, 'path': lossless_path},
+                        "base": {
+                            "size": Path(base_path).stat().st_size,
+                            "path": base_path,
+                        },
+                        "lossy": {
+                            "size": Path(lossy_path).stat().st_size,
+                            "path": lossy_path,
+                        },
+                        "lossless": {
+                            "size": Path(lossless_path).stat().st_size,
+                            "path": lossless_path,
+                        },
                     }
                 )
         except Exception as _e:
@@ -76,13 +89,16 @@ class PngStrategy:
         else:
             # Use lossy
             # TODO: Move this into a seperate function
-            if all(file['lossy']['size'] < file['lossless']['size'] for file in converted_files):
+            if all(
+                file["lossy"]["size"] < file["lossless"]["size"]
+                for file in converted_files
+            ):
                 for file in converted_files:
-                    Path.unlink(file['base']['path'])
-                    Path.unlink(file['lossless']['path'])
+                    Path.unlink(file["base"]["path"])
+                    Path.unlink(file["lossless"]["path"])
                 return cjxl_lossy
 
             for file in converted_files:
-                Path.unlink(file['base']['path'])
-                Path.unlink(file['lossy']['path'])
+                Path.unlink(file["base"]["path"])
+                Path.unlink(file["lossy"]["path"])
             return cjxl_lossless

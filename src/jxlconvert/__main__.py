@@ -17,6 +17,7 @@ IMGEXT = ["jpg", "jpeg", "png", "gif"]
 CJXLLOSSY = "cjxl"
 CJXLLOSSLESS = "cjxl -d 0.0"
 
+
 @app.command()
 def dirs():  # noqa: C901, PLR0912 TODO : Reduce the complexity by using more functions and follow PLR0912
     """
@@ -85,7 +86,11 @@ def dirs():  # noqa: C901, PLR0912 TODO : Reduce the complexity by using more fu
                             jxl_command = "cjxl -j 1"
 
                             if iext == "png":
-                                jxl_command = PngStrategy().png_strategy(jxl_folder=TEMPDIR, cjxl_lossy=CJXLLOSSY, cjxl_lossless=CJXLLOSSLESS)
+                                jxl_command = PngStrategy().png_strategy(
+                                    jxl_folder=TEMPDIR,
+                                    cjxl_lossy=CJXLLOSSY,
+                                    cjxl_lossless=CJXLLOSSLESS,
+                                )
 
                             for new_root, _new_dirs, new_files in os.walk("."):
                                 first_image = True
@@ -105,7 +110,7 @@ def dirs():  # noqa: C901, PLR0912 TODO : Reduce the complexity by using more fu
                                     if new_file.lower().endswith("." + iext):
                                         file_path = Path(new_root) / new_file
 
-                                        #TODO: Remove usage of os.path.splittext also remove the usage of del and use something that is system agnostic
+                                        # TODO: Remove usage of os.path.splittext also remove the usage of del and use something that is system agnostic
                                         # fmt: off
                                         os.system(
                                             f"{jxl_command} --quiet \"{file_path}\" \"{os.path.splitext(file_path)[0]}.jxl\" && del /F /Q \"{file_path}\""  # noqa: S605, PTH122
@@ -114,7 +119,7 @@ def dirs():  # noqa: C901, PLR0912 TODO : Reduce the complexity by using more fu
 
                                 progress.remove_task(task3)
 
-                        #TODO: Remove usage of os.path.splittext
+                        # TODO: Remove usage of os.path.splittext
                         subprocess.run(
                             [  # noqa: S607
                                 "7z",
