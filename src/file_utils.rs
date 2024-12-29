@@ -1,24 +1,62 @@
-use indicatif::{ProgressBar, ProgressStyle};
+use std::path::PathBuf;
+
 use walkdir::{DirEntry, WalkDir};
+use zip_extensions::{zip_create_from_directory, zip_extract};
+
+use crate::{
+    conversion_utils, create_progress_bar,
+    path_utils::{self},
+};
 
 pub fn process_files(comic_directory: String) -> () {
     let comic_files = filter_comic_files(comic_directory);
 
-    // Initialize and configure the progress bar.
-    let bar = ProgressBar::new(comic_files.len() as u64);
-    bar.set_style(
-        ProgressStyle::with_template(
-            "[{eta_precise}] {msg} {bar:40.cyan/blue} {pos}/{len}",
-        )
-        .unwrap()
-        .progress_chars("##-"),
-    );
-    bar.set_message("Comics Processed");
+    // Initialize and configure the progress bar for comics.
+    let comic_progress_bar =
+        create_progress_bar(comic_files.len() as u64, "Comics Processed".to_string());
 
-    for _ in comic_files {
+    for comic in comic_files {
+        comic_progress_bar.inc(1);
+
+        // Create temp directory and empty it if already exists.
+        let temp_dir = path_utils::create_temp_dir();
+
+        let comic_pathbuf = comic.into_path();
+
+        zip_extract(&comic_pathbuf, &temp_dir).expect(&format!(
+            "Unable to extract comic file, {}",
+            &comic_pathbuf.to_str().unwrap()
+        ));
+
+        process_images(&temp_dir);
+
+        path_utils::remove_file(&comic_pathbuf, comic_pathbuf.to_str().unwrap());
+
+        zip_create_from_directory(&comic_pathbuf, &temp_dir).unwrap();
+
+        path_utils::remove_directory(&temp_dir.to_path_buf(), &temp_dir.to_str().unwrap());
     }
 
-    bar.finish();
+    comic_progress_bar.finish_and_clear();
+}
+
+fn process_images(images_directory: &PathBuf) -> () {
+    let image_files = filter_image_files(&images_directory);
+
+    let image_progress_bar = create_progress_bar(
+        image_files.len() as u64,
+        "Comic Images Processed".to_string(),
+    );
+
+    for image in image_files {
+        image_progress_bar.inc(1);
+        conversion_utils::convert_image(&image);
+
+        // Delete the original image file after conversion.
+        path_utils::remove_file(&image.path().to_path_buf(), &image.path().to_str().unwrap());
+    }
+
+    image_progress_bar.finish_and_clear();
 }
 
 /*
@@ -49,6 +87,38 @@ Check if a file is a comic or not
 fn is_comic(file: &DirEntry) -> bool {
     matches!(
         file.path().extension().and_then(std::ffi::OsStr::to_str).map(|s| s.to_lowercase()),
-        Some(ref ext) if ext == "cbz" || ext == "cbr"
+        Some(ref ext) if ["cbz"].contains(&ext.as_str())
+    )
+}
+
+/*
+Walk through the unzipped comic and filter out all the images out of it.
+Also takes PathBuf instead of String as temp_dir is already stored in PathBuf.
+*/
+fn filter_image_files(images_dir: &PathBuf) -> Vec<DirEntry> {
+    let image_files = WalkDir::new(images_dir)
+        .into_iter()
+        .filter(|e| {
+            e.as_ref()
+                .unwrap()
+                .metadata()
+                .expect("Unable to detect image file")
+                .is_file()
+                && is_image(e.as_ref().unwrap())
+        })
+        .map(|e| e.unwrap())
+        .collect();
+
+    image_files
+}
+
+/*
+Checks if the given file is an accepted image file or not.
+*/
+fn is_image(file: &DirEntry) -> bool {
+    matches!(
+        file.path().extension().and_then(std::ffi::OsStr::to_str).map(|s| s.to_lowercase()),
+        // TODO: Add more image formats to the list
+        Some(ref ext) if ["jpg", "jpeg", "png", "gif"].contains(&ext.as_str())
     )
 }
