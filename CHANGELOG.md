@@ -1,5 +1,9 @@
 This file contains the changelog for the JXLConvert project. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2024-12-29
+
+Published the initial release of the JXLConvert project to crates.io.
+
 ## [0.1.0] - 2024-12-29
 
 This is the initial release of the JXLConvert project. It includes the following features:
