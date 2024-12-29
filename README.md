@@ -11,6 +11,13 @@ The app also requires libjxl to be installed on your system and to be in your PA
 After installing Rust and libjxl, you can clone the repository and run the app by running the following commands:
 
 ```bash
+cargo install jxlconvert
+jxlconvert
+```
+
+Or you can clone the repository and run the app by running the following commands:
+
+```bash
 git clone https://github.com/jindalpratik/JXLconvert.git
 cd JXLconvert
 cargo run --release
