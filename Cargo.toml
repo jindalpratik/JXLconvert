@@ -9,6 +9,7 @@ repository = "https://github.com/jindalpratik/JXLconvert"
 readme = "README.md"
 
 [dependencies]
+argh = "0.1.13"
 dialoguer = "0.11.0"
 indicatif = "0.17.9"
 walkdir = "2.5.0"
