@@ -1,5 +1,6 @@
 use indicatif::{ProgressBar, ProgressStyle};
 
+pub mod args_utils;
 pub mod conversion_utils;
 pub mod file_utils;
 pub mod path_utils;

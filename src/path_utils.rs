@@ -5,7 +5,21 @@ use std::{
 
 use dialoguer::Input;
 
-pub fn get_and_validate_path(message: &str) -> String {
+/// Function to get and validate the folder path where the comics are located.
+pub fn get_and_validate_path(source: Option<String>, message: &str) -> String {
+    // Check if a correct path if passed directly via a flag and use it.
+    match source {
+        Some(s) => {
+            if validate_path(&s) {
+                return s;
+            } else {
+                println!("Provided path is invalid. Please enter a valid path.");
+            }
+        }
+        None => {}
+    }
+
+    // Take user input if no correct path passed.
     loop {
         let path_name: String = Input::new()
             .with_prompt(format!("Enter the {}", message))

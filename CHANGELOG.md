@@ -1,5 +1,11 @@
 This file contains the changelog for the JXLConvert project. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [unreleased]
+
+### Added
+
+- Added support for passing source comics directory as a command line argument.
+
 ## [0.1.1] - 2024-12-29
 
 Published the initial release of the JXLConvert project to crates.io.
