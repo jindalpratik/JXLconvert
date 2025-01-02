@@ -6,6 +6,10 @@ pub struct Args {
     #[argh(option)]
     /// optional argument to specify comics folder skipping user input.
     pub source: Option<String>,
+
+    #[argh(option)]
+    /// optional argument to specify folder skipping user input.
+    pub destination: Option<String>,
 }
 
 impl Args {
