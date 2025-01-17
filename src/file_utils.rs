@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub fn process_files(comic_directory: String, destination_directory: Option<String>) -> () {
-    let comic_files = filter_comic_files(comic_directory);
+    let comic_files = filter_comic_files(&comic_directory);
 
     // Initialize and configure the progress bar for comics.
     let comic_progress_bar =
@@ -33,7 +33,12 @@ pub fn process_files(comic_directory: String, destination_directory: Option<Stri
         // Create destination file path from comic file path based on destination directory.
         let dest_path = match destination_directory {
             Some(ref destination_directory) => {
-                Path::new(&destination_directory).join(comic_pathbuf.file_name().unwrap())
+                let relative_path = comic_pathbuf.strip_prefix(&comic_directory).unwrap();
+                let dest_path = Path::new(&destination_directory).join(relative_path);
+                if let Some(parent) = dest_path.parent() {
+                    std::fs::create_dir_all(parent).expect("Failed to create destination directories");
+                }
+                dest_path
             }
             None => comic_pathbuf.clone(),
         };
@@ -73,7 +78,7 @@ fn process_images(images_directory: &PathBuf) -> () {
 /*
 Walk through the comic directory and create a vector of all the comic files.
 */
-fn filter_comic_files(comic_directory: String) -> Vec<DirEntry> {
+fn filter_comic_files(comic_directory: &String) -> Vec<DirEntry> {
     let comic_files = WalkDir::new(comic_directory)
         .into_iter()
         // Filter the comic files out of the directories and unrelated files
