@@ -8,8 +8,9 @@ use crate::{
     path_utils::{self},
 };
 
-pub fn process_files(comic_directory: String) -> () {
+pub fn process_files(comic_directory: String, destination_directory: Option<String>) -> () {
     let comic_files = filter_comic_files(comic_directory);
+    println!("{:?}",destination_directory);
 
     // Initialize and configure the progress bar for comics.
     let comic_progress_bar =

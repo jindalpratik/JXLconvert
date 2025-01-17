@@ -9,7 +9,7 @@ use dialoguer::{Input, Select};
 pub fn get_and_validate_path(
     source: Option<String>,
     destination: Option<String>,
-) -> (String, String) {
+) -> (String, Option<String>) {
     // Check if a correct path if passed directly via a flag and use it.
     let source: String = match source {
         Some(s) => {
@@ -28,22 +28,23 @@ pub fn get_and_validate_path(
     let selection = Select::new()
         .with_prompt("Do you want to overwrite existing comics? [Proceed with caution]")
         .items(&items)
+        .default(1)
         .interact()
         .unwrap();
 
-    let destination = if items[selection] == "YES" {
-        source.clone()
+    let destination: Option<String> = if items[selection] == "YES" {
+        None
     } else {
         match destination {
             Some(d) => {
                 if validate_path(&d) {
-                    d
+                    Some(d)
                 } else {
                     println!("Provided path {d} is invalid. Please enter a valid path.");
-                    get_path("destination comic directory")
+                    Some(get_path("destination comic directory"))
                 }
             }
-            None => get_path("destination comic directory"),
+            None => Some(get_path("destination comic directory")),
         }
     };
 
