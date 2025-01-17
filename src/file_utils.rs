@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use walkdir::{DirEntry, WalkDir};
 use zip_extensions::{zip_create_from_directory, zip_extract};
@@ -10,7 +10,6 @@ use crate::{
 
 pub fn process_files(comic_directory: String, destination_directory: Option<String>) -> () {
     let comic_files = filter_comic_files(comic_directory);
-    println!("{:?}",destination_directory);
 
     // Initialize and configure the progress bar for comics.
     let comic_progress_bar =
@@ -31,9 +30,20 @@ pub fn process_files(comic_directory: String, destination_directory: Option<Stri
 
         process_images(&temp_dir);
 
-        path_utils::remove_file(&comic_pathbuf, comic_pathbuf.to_str().unwrap());
+        // Create destination file path from comic file path based on destination directory.
+        let dest_path = match destination_directory {
+            Some(ref destination_directory) => {
+                Path::new(&destination_directory).join(comic_pathbuf.file_name().unwrap())
+            }
+            None => comic_pathbuf.clone(),
+        };
 
-        zip_create_from_directory(&comic_pathbuf, &temp_dir).unwrap();
+        // Remove original comic file if original comic file is not specified.
+        if destination_directory.is_none() {
+            path_utils::remove_file(&comic_pathbuf, comic_pathbuf.to_str().unwrap());
+        }
+
+        zip_create_from_directory(&dest_path, &temp_dir).unwrap();
 
         path_utils::remove_directory(&temp_dir.to_path_buf(), &temp_dir.to_str().unwrap());
     }
