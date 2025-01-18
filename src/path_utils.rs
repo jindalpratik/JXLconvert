@@ -3,26 +3,64 @@ use std::{
     path::PathBuf,
 };
 
-use dialoguer::Input;
+use dialoguer::{Input, Select};
 
 /// Function to get and validate the folder path where the comics are located.
-pub fn get_and_validate_path(source: Option<String>, message: &str) -> String {
+pub fn get_and_validate_path(
+    source: Option<String>,
+    destination: Option<String>,
+) -> (String, Option<String>) {
     // Check if a correct path if passed directly via a flag and use it.
-    match source {
+    let source: String = match source {
         Some(s) => {
             if validate_path(&s) {
-                return s;
+                s
             } else {
-                println!("Provided path is invalid. Please enter a valid path.");
+                println!("Provided path {s} is invalid. Please enter a valid path.");
+                get_path("source comic directory")
             }
         }
-        None => {}
-    }
+        None => get_path("source comic directory"),
+    };
 
+    let destination: Option<String> = match destination {
+        // Destination provided as an argument.
+        Some(d) => {
+            if validate_path(&d) {
+                Some(d)
+            } else {
+                println!("Provided path {d} is invalid. Please enter a valid path.");
+                Some(get_path("destination comic directory"))
+            }
+        }
+
+        // No Destination provided in argument.
+        None => {
+            let items = vec!["YES", "NO"];
+
+            let selection = Select::new()
+                .with_prompt("Do you want to overwrite existing comics? [Proceed with caution]")
+                .items(&items)
+                .default(1)
+                .interact()
+                .unwrap();
+
+            if items[selection] == "YES" {
+                None
+            } else {
+                Some(get_path("destination comic directory"))
+            }
+        }
+    };
+
+    (source, destination)
+}
+
+fn get_path(msg: &str) -> String {
     // Take user input if no correct path passed.
     loop {
         let path_name: String = Input::new()
-            .with_prompt(format!("Enter the {}", message))
+            .with_prompt(format!("Enter the {}", msg))
             .interact_text()
             .unwrap();
 
@@ -32,6 +70,10 @@ pub fn get_and_validate_path(source: Option<String>, message: &str) -> String {
             println!("Invalid path. Please try again.");
         }
     }
+}
+
+fn validate_path(path: &str) -> bool {
+    fs::metadata(path).is_ok()
 }
 
 pub fn create_temp_dir() -> PathBuf {
@@ -52,8 +94,4 @@ pub fn remove_file(file: &PathBuf, error: &str) {
 
 pub fn remove_directory(directory: &PathBuf, error: &str) {
     fs::remove_dir_all(&directory).expect(&format!("Unable to remove directory {}", error));
-}
-
-fn validate_path(path: &str) -> bool {
-    fs::metadata(path).is_ok()
 }

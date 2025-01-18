@@ -9,7 +9,10 @@ pub fn convert_image(image: &DirEntry) {
         .arg(image.path().to_str().unwrap())
         .arg(image.path().with_extension("jxl").to_str().unwrap())
         .output()
-        .expect("Failed to execute command");
+        .expect(&format!(
+            "Failed to convert {}",
+            &image.path().to_str().unwrap()
+        ));
 
     let mut file = OpenOptions::new()
         .create(true)
