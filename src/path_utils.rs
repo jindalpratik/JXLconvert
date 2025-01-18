@@ -23,28 +23,33 @@ pub fn get_and_validate_path(
         None => get_path("source comic directory"),
     };
 
-    let items = vec!["YES", "NO"];
-
-    let selection = Select::new()
-        .with_prompt("Do you want to overwrite existing comics? [Proceed with caution]")
-        .items(&items)
-        .default(1)
-        .interact()
-        .unwrap();
-
-    let destination: Option<String> = if items[selection] == "YES" {
-        None
-    } else {
-        match destination {
-            Some(d) => {
-                if validate_path(&d) {
-                    Some(d)
-                } else {
-                    println!("Provided path {d} is invalid. Please enter a valid path.");
-                    Some(get_path("destination comic directory"))
-                }
+    let destination: Option<String> = match destination {
+        // Destination provided as an argument.
+        Some(d) => {
+            if validate_path(&d) {
+                Some(d)
+            } else {
+                println!("Provided path {d} is invalid. Please enter a valid path.");
+                Some(get_path("destination comic directory"))
             }
-            None => Some(get_path("destination comic directory")),
+        }
+        
+        // No Destination provided in argument.
+        None => {
+            let items = vec!["YES", "NO"];
+
+            let selection = Select::new()
+                .with_prompt("Do you want to overwrite existing comics? [Proceed with caution]")
+                .items(&items)
+                .default(1)
+                .interact()
+                .unwrap();
+
+            if items[selection] == "Yes" {
+                None
+            } else {
+                Some(get_path("destination comic directory"))
+            }
         }
     };
 
