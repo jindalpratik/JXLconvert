@@ -33,7 +33,7 @@ pub fn get_and_validate_path(
                 Some(get_path("destination comic directory"))
             }
         }
-        
+
         // No Destination provided in argument.
         None => {
             let items = vec!["YES", "NO"];
@@ -45,7 +45,7 @@ pub fn get_and_validate_path(
                 .interact()
                 .unwrap();
 
-            if items[selection] == "Yes" {
+            if items[selection] == "YES" {
                 None
             } else {
                 Some(get_path("destination comic directory"))
