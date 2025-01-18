@@ -23,12 +23,12 @@ cd JXLconvert
 cargo run --release
 ```
 
-The app will prompt you to enter the path to directory containing the comic archives. After entering the path, the app will convert all the images in the comic archives to JPEG XL format.
+The app will prompt you to enter the path to directory containing the comic archives and the destination directory. After entering the path, the app will convert all the images in the comic archives to JPEG XL format.
 
 You can also specify the path to the directory containing the comic archives as a command line argument as follows skipping the prompt:
 
 ```bash
-jxlconvert --source /path/to/comic/archives
+jxlconvert --source /path/to/comic/archives --destination /path/to/output/directory
 ```
 
 ## Disclaimer
