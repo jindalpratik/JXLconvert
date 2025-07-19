@@ -7,6 +7,7 @@ This file contains the changelog for the JXLConvert project. The format is based
 - Added support for passing source comics directory as a command line argument.
 - Added suuport for specifying the output directory for the converted comics. (#11)
    - Also introduces a new cli argument --destination.
+- Bumped dependencies to latest versions.
 
 ## [0.1.1] - 2024-12-29
 
