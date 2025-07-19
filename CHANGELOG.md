@@ -8,6 +8,7 @@ This file contains the changelog for the JXLConvert project. The format is based
 - Added suuport for specifying the output directory for the converted comics. (#11)
    - Also introduces a new cli argument --destination.
 - Bumped dependencies to latest versions.
+- Moved temp folder to os temp and use uuid to create unique subdirectories for temp folders so they don't clash.
 
 ## [0.1.1] - 2024-12-29
 
