@@ -1,4 +1,5 @@
 use std::{
+    env,
     fs::{self},
     path::PathBuf,
 };
@@ -77,7 +78,8 @@ fn validate_path(path: &str) -> bool {
 }
 
 pub fn create_temp_dir() -> PathBuf {
-    let temp_dir = PathBuf::from(r"./temp_converion_dir");
+    let mut temp_dir = env::temp_dir();
+    temp_dir.push("jxlconvert_temp");
 
     if temp_dir.exists() {
         fs::remove_dir_all(&temp_dir).unwrap();
