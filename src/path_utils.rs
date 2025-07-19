@@ -5,6 +5,7 @@ use std::{
 };
 
 use dialoguer::{Input, Select};
+use uuid::Uuid;
 
 /// Function to get and validate the folder path where the comics are located.
 pub fn get_and_validate_path(
@@ -80,6 +81,15 @@ fn validate_path(path: &str) -> bool {
 pub fn create_temp_dir() -> PathBuf {
     let mut temp_dir = env::temp_dir();
     temp_dir.push("jxlconvert_temp");
+    
+    // Create the main jxlconvert_temp directory if it doesn't exist
+    if !temp_dir.exists() {
+        fs::create_dir(&temp_dir).unwrap();
+    }
+    
+    // Create a unique subdirectory using UUID
+    let uuid = Uuid::new_v4();
+    temp_dir.push(uuid.to_string());
 
     if temp_dir.exists() {
         fs::remove_dir_all(&temp_dir).unwrap();
