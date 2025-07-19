@@ -1,14 +1,17 @@
 This file contains the changelog for the JXLConvert project. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [unreleased]
+## [0.2.0]
 
 ### Added
 
 - Added support for passing source comics directory as a command line argument.
 - Added suuport for specifying the output directory for the converted comics. (#11)
    - Also introduces a new cli argument --destination.
-- Bumped dependencies to latest versions.
+
+### Changed
+
 - Moved temp folder to os temp and use uuid to create unique subdirectories for temp folders so they don't clash.
+- Bumped dependencies to latest versions.
 
 ## [0.1.1] - 2024-12-29
 
