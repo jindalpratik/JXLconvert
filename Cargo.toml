@@ -1,7 +1,7 @@
 [package]
 name = "jxlconvert"
 version = "0.2.0"
-edition = "2021"
+edition = "2024"
 license = "MIT"
 categories = ["command-line-utilities", "multimedia::images"]
 description = "A Rust CLI app that converts images in comic archives to JPEG XL format."
