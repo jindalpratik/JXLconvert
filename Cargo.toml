@@ -10,9 +10,9 @@ readme = "README.md"
 
 [dependencies]
 argh = "0.1.13"
-dialoguer = "0.11.0"
+dialoguer = "0.12.0"
 indicatif = "0.18.0"
 walkdir = "2.5.0"
-zip = "0.3.0" # Depends on zip-extension version
+zip = "0.3.0"                                    # Depends on zip-extension version
 zip-extensions = "0.8.3"
 uuid = { version = "1.17.0", features = ["v4"] }
