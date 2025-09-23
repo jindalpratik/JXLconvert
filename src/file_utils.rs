@@ -3,7 +3,8 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use walkdir::{DirEntry, WalkDir};
-use zip::{ZipArchive, ZipWriter, write::FileOptions};
+use zip::write::SimpleFileOptions;
+use zip::{ZipArchive, ZipWriter};
 
 use crate::{
     conversion_utils, create_progress_bar,
@@ -17,9 +18,9 @@ fn extract_zip(zip_path: &Path, dest_dir: &Path) -> Result<(), Box<dyn std::erro
 
     for i in 0..archive.len() {
         let mut file = archive.by_index(i)?;
-        let outpath = dest_dir.join(file.sanitized_name());
+        let outpath = dest_dir.join(file.mangled_name());
 
-        if (*file.name()).ends_with('/') {
+        if file.is_dir() {
             std::fs::create_dir_all(&outpath)?;
         } else {
             if let Some(p) = outpath.parent() {
@@ -42,7 +43,7 @@ fn create_zip_from_directory(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let file = File::create(zip_path)?;
     let mut zip = ZipWriter::new(file);
-    let options = FileOptions::default()
+    let options = SimpleFileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated)
         .unix_permissions(0o755);
 
