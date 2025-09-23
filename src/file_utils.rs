@@ -1,12 +1,74 @@
+use std::fs::File;
+use std::io;
 use std::path::{Path, PathBuf};
 
 use walkdir::{DirEntry, WalkDir};
-use zip_extensions::{zip_create_from_directory, zip_extract};
+use zip::{ZipArchive, ZipWriter, write::FileOptions};
 
 use crate::{
     conversion_utils, create_progress_bar,
     path_utils::{self},
 };
+
+/// Extract a zip file to a destination directory
+fn extract_zip(zip_path: &Path, dest_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    let file = File::open(zip_path)?;
+    let mut archive = ZipArchive::new(file)?;
+
+    for i in 0..archive.len() {
+        let mut file = archive.by_index(i)?;
+        let outpath = dest_dir.join(file.sanitized_name());
+
+        if (*file.name()).ends_with('/') {
+            std::fs::create_dir_all(&outpath)?;
+        } else {
+            if let Some(p) = outpath.parent() {
+                if !p.exists() {
+                    std::fs::create_dir_all(p)?;
+                }
+            }
+            let mut outfile = File::create(&outpath)?;
+            io::copy(&mut file, &mut outfile)?;
+        }
+    }
+
+    Ok(())
+}
+
+/// Create a zip file from a directory
+fn create_zip_from_directory(
+    zip_path: &Path,
+    source_dir: &Path,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let file = File::create(zip_path)?;
+    let mut zip = ZipWriter::new(file);
+    let options = FileOptions::default()
+        .compression_method(zip::CompressionMethod::Deflated)
+        .unix_permissions(0o755);
+
+    let walkdir = WalkDir::new(source_dir);
+    let it = walkdir.into_iter();
+
+    for entry in it {
+        let entry = entry?;
+        let path = entry.path();
+        let name = path.strip_prefix(source_dir)?;
+
+        // Write file or directory explicitly
+        // Some unzip tools unpack files with directory paths correctly, others don't!
+        if path.is_file() {
+            zip.start_file(name.to_string_lossy(), options)?;
+            let mut f = File::open(path)?;
+            io::copy(&mut f, &mut zip)?;
+        } else if !name.as_os_str().is_empty() {
+            // Only if not root! Avoids path spec / warning
+            // and mkdir failure on unzip
+            zip.add_directory(name.to_string_lossy(), options)?;
+        }
+    }
+    zip.finish()?;
+    Ok(())
+}
 
 pub fn process_files(comic_directory: String, destination_directory: Option<String>) -> () {
     let comic_files = filter_comic_files(&comic_directory);
@@ -23,7 +85,7 @@ pub fn process_files(comic_directory: String, destination_directory: Option<Stri
 
         let comic_pathbuf = comic.into_path();
 
-        zip_extract(&comic_pathbuf, &temp_dir).expect(&format!(
+        extract_zip(&comic_pathbuf, &temp_dir).expect(&format!(
             "Unable to extract comic file, {}",
             &comic_pathbuf.to_str().unwrap()
         ));
@@ -36,7 +98,8 @@ pub fn process_files(comic_directory: String, destination_directory: Option<Stri
                 let relative_path = comic_pathbuf.strip_prefix(&comic_directory).unwrap();
                 let dest_path = Path::new(&destination_directory).join(relative_path);
                 if let Some(parent) = dest_path.parent() {
-                    std::fs::create_dir_all(parent).expect("Failed to create destination directories");
+                    std::fs::create_dir_all(parent)
+                        .expect("Failed to create destination directories");
                 }
                 dest_path
             }
@@ -48,7 +111,7 @@ pub fn process_files(comic_directory: String, destination_directory: Option<Stri
             path_utils::remove_file(&comic_pathbuf, comic_pathbuf.to_str().unwrap());
         }
 
-        zip_create_from_directory(&dest_path, &temp_dir).unwrap();
+        create_zip_from_directory(&dest_path, &temp_dir).unwrap();
 
         path_utils::remove_directory(&temp_dir.to_path_buf(), &temp_dir.to_str().unwrap());
     }
