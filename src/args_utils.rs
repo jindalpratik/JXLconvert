@@ -10,6 +10,10 @@ pub struct Args {
     #[argh(option)]
     /// optional argument to specify folder skipping user input.
     pub destination: Option<String>,
+
+    #[argh(option)]
+    /// inspect a specific ZIP/CBZ file to see its contents and check for image files.
+    pub inspect: Option<String>,
 }
 
 impl Args {

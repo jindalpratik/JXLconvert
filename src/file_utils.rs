@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io;
+use std::io::{self, BufReader};
 use std::path::{Path, PathBuf};
 
 use walkdir::{DirEntry, WalkDir};
@@ -71,6 +71,37 @@ fn create_zip_from_directory(
     Ok(())
 }
 
+/// Check if a ZIP file contains any image files
+fn zip_contains_images(zip_path: &Path) -> Result<bool, Box<dyn std::error::Error>> {
+    let file = File::open(zip_path)?;
+    let reader = BufReader::new(file);
+    let mut archive = ZipArchive::new(reader)?;
+
+    for i in 0..archive.len() {
+        let file = archive.by_index(i)?;
+
+        // Skip directories
+        if file.is_dir() {
+            continue;
+        }
+
+        // Get the file path
+        let outpath = match file.enclosed_name() {
+            Some(path) => path,
+            None => {
+                continue;
+            }
+        };
+
+        // Check if it's an image file using the is_image_path function
+        if is_image_path(&outpath) {
+            return Ok(true);
+        }
+    }
+
+    Ok(false)
+}
+
 pub fn process_files(comic_directory: String, destination_directory: Option<String>) -> () {
     let comic_files = filter_comic_files(&comic_directory);
 
@@ -81,10 +112,22 @@ pub fn process_files(comic_directory: String, destination_directory: Option<Stri
     for comic in comic_files {
         comic_progress_bar.inc(1);
 
+        let comic_pathbuf = comic.into_path();
+
+        // Check if the ZIP file contains any image files before processing
+        match zip_contains_images(&comic_pathbuf) {
+            Ok(contains_images) => {
+                if !contains_images {
+                    continue;
+                }
+            }
+            Err(_) => {
+                continue;
+            }
+        }
+
         // Create temp directory and empty it if already exists.
         let temp_dir = path_utils::create_temp_dir();
-
-        let comic_pathbuf = comic.into_path();
 
         extract_zip(&comic_pathbuf, &temp_dir).expect(&format!(
             "Unable to extract comic file, {}",
@@ -193,12 +236,19 @@ fn filter_image_files(images_dir: &PathBuf) -> Vec<DirEntry> {
 }
 
 /*
-Checks if the given file is an accepted image file or not.
+Helper function to check if a path has an image extension
 */
-fn is_image(file: &DirEntry) -> bool {
+fn is_image_path(path: &Path) -> bool {
     matches!(
-        file.path().extension().and_then(std::ffi::OsStr::to_str).map(|s| s.to_lowercase()),
+        path.extension().and_then(std::ffi::OsStr::to_str).map(|s| s.to_lowercase()),
         // TODO: Add more image formats to the list
         Some(ref ext) if ["jpg", "jpeg", "png", "gif"].contains(&ext.as_str())
     )
+}
+
+/*
+Checks if the given file is an accepted image file or not.
+*/
+fn is_image(file: &DirEntry) -> bool {
+    is_image_path(file.path())
 }
