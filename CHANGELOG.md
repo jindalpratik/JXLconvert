@@ -2,6 +2,8 @@ This file contains the changelog for the JXLConvert project. The format is based
 
 ## [Unreleased]
 
+## [0.2.1] - 2025-09-24
+
 ### Added
 - Skip comic files which contain no supported image files.
 
