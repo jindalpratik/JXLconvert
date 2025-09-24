@@ -2,6 +2,9 @@ This file contains the changelog for the JXLConvert project. The format is based
 
 ## [Unreleased]
 
+### Added
+- Skip comic files which contain no supported image files.
+
 ### Dependencies
 - Updated `zip` crate to version 5.1.1.
 - Updated `uuid` crate to version 1.18.1.
