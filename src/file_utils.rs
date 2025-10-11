@@ -45,7 +45,7 @@ fn create_zip_from_directory(
     let file = File::create(zip_path)?;
     let mut zip = ZipWriter::new(file);
     let options = SimpleFileOptions::default()
-        .compression_method(zip::CompressionMethod::Deflated)
+        .compression_method(zip::CompressionMethod::Stored)
         .unix_permissions(0o755);
 
     let walkdir = WalkDir::new(source_dir);
