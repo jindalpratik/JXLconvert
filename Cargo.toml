@@ -15,3 +15,4 @@ indicatif = "0.18.0"
 walkdir = "2.5.0"
 zip = "6.0.0"
 uuid = { version = "1.18.1", features = ["v4"] }
+rayon = "1.11.0"

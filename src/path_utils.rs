@@ -1,7 +1,7 @@
 use std::{
     env,
     fs::{self},
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 
 use dialoguer::{Input, Select};
@@ -81,12 +81,12 @@ fn validate_path(path: &str) -> bool {
 pub fn create_temp_dir() -> PathBuf {
     let mut temp_dir = env::temp_dir();
     temp_dir.push("jxlconvert_temp");
-    
+
     // Create the main jxlconvert_temp directory if it doesn't exist
     if !temp_dir.exists() {
         fs::create_dir(&temp_dir).unwrap();
     }
-    
+
     // Create a unique subdirectory using UUID
     let uuid = Uuid::new_v4();
     temp_dir.push(uuid.to_string());
@@ -100,10 +100,11 @@ pub fn create_temp_dir() -> PathBuf {
     temp_dir
 }
 
-pub fn remove_file(file: &PathBuf, error: &str) {
-    fs::remove_file(&file).expect(&format!("Unable to remove file {}", error));
+pub fn remove_file(file: &Path, error: &str) {
+    fs::remove_file(file).unwrap_or_else(|err| panic!("Unable to remove file {}: {}", error, err));
 }
 
-pub fn remove_directory(directory: &PathBuf, error: &str) {
-    fs::remove_dir_all(&directory).expect(&format!("Unable to remove directory {}", error));
+pub fn remove_directory(directory: &Path, error: &str) {
+    fs::remove_dir_all(directory)
+        .unwrap_or_else(|err| panic!("Unable to remove directory {}: {}", error, err));
 }

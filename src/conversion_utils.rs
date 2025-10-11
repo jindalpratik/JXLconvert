@@ -1,18 +1,15 @@
 use std::fs::OpenOptions;
 use std::io::Write;
+use std::path::Path;
 use std::process::Command;
-use walkdir::DirEntry;
 
-pub fn convert_image(image: &DirEntry) {
+pub fn convert_image(image_path: &Path) {
     let output = Command::new("cjxl")
-        .args(jxl_command(&image))
-        .arg(image.path().to_str().unwrap())
-        .arg(image.path().with_extension("jxl").to_str().unwrap())
+        .args(jxl_command(image_path))
+        .arg(image_path)
+        .arg(image_path.with_extension("jxl"))
         .output()
-        .expect(&format!(
-            "Failed to convert {}",
-            &image.path().to_str().unwrap()
-        ));
+        .unwrap_or_else(|err| panic!("Failed to convert {}: {}", image_path.display(), err));
 
     let mut file = OpenOptions::new()
         .create(true)
@@ -24,9 +21,8 @@ pub fn convert_image(image: &DirEntry) {
 }
 
 // Select the jxl command to use for different image types.
-fn jxl_command(image: &DirEntry) -> Vec<&str> {
-    match image
-        .path()
+fn jxl_command(image_path: &Path) -> Vec<&'static str> {
+    match image_path
         .extension()
         .and_then(std::ffi::OsStr::to_str)
         .map(|s| s.to_lowercase())
