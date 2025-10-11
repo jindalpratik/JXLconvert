@@ -25,9 +25,10 @@ fn extract_zip(zip_path: &Path, dest_dir: &Path) -> Result<(), Box<dyn std::erro
             std::fs::create_dir_all(&outpath)?;
         } else {
             if let Some(p) = outpath.parent()
-                && !p.exists() {
-                    std::fs::create_dir_all(p)?;
-                }
+                && !p.exists()
+            {
+                std::fs::create_dir_all(p)?;
+            }
             let mut outfile = File::create(&outpath)?;
             io::copy(&mut file, &mut outfile)?;
         }
@@ -129,8 +130,12 @@ pub fn process_files(comic_directory: String, destination_directory: Option<Stri
         // Create temp directory and empty it if already exists.
         let temp_dir = path_utils::create_temp_dir();
 
-        extract_zip(&comic_pathbuf, &temp_dir).unwrap_or_else(|_| panic!("Unable to extract comic file, {}",
-            &comic_pathbuf.to_str().unwrap()));
+        extract_zip(&comic_pathbuf, &temp_dir).unwrap_or_else(|_| {
+            panic!(
+                "Unable to extract comic file, {}",
+                &comic_pathbuf.to_str().unwrap()
+            )
+        });
 
         process_images(&temp_dir);
 
@@ -182,10 +187,11 @@ fn process_images(images_directory: &PathBuf) {
         let image_path = image.into_path();
         let image_display = image_path.display().to_string();
 
-        conversion_utils::convert_image(image_path.as_path());
+        let converted = conversion_utils::convert_image(image_path.as_path());
 
-        // Delete the original image file after conversion.
-        path_utils::remove_file(image_path.as_path(), &image_display);
+        if converted {
+            path_utils::remove_file(image_path.as_path(), &image_display);
+        }
 
         progress.inc(1);
     });
@@ -197,8 +203,6 @@ fn process_images(images_directory: &PathBuf) {
 Walk through the comic directory and create a vector of all the comic files.
 */
 fn filter_comic_files(comic_directory: &String) -> Vec<DirEntry> {
-    
-
     WalkDir::new(comic_directory)
         .into_iter()
         // Filter the comic files out of the directories and unrelated files
@@ -230,8 +234,6 @@ Walk through the unzipped comic and filter out all the images out of it.
 Also takes PathBuf instead of String as temp_dir is already stored in PathBuf.
 */
 fn filter_image_files(images_dir: &PathBuf) -> Vec<DirEntry> {
-    
-
     WalkDir::new(images_dir)
         .into_iter()
         .filter(|e| {

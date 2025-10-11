@@ -3,13 +3,12 @@ use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 
-pub fn convert_image(image_path: &Path) {
+pub fn convert_image(image_path: &Path) -> bool {
     let output = Command::new("cjxl")
         .args(jxl_command(image_path))
         .arg(image_path)
         .arg(image_path.with_extension("jxl"))
-        .output()
-        .unwrap_or_else(|err| panic!("Failed to convert {}: {}", image_path.display(), err));
+        .output();
 
     let mut file = OpenOptions::new()
         .create(true)
@@ -17,7 +16,34 @@ pub fn convert_image(image_path: &Path) {
         .open("conversion.log")
         .expect("Unable to open log file");
 
-    writeln!(file, "{:?}", output).expect("Unable to write to log file");
+    match output {
+        Ok(output) => {
+            if !output.status.success() {
+                let stderr = String::from_utf8_lossy(&output.stderr);
+                eprintln!(
+                    "Failed to convert {}: {}",
+                    image_path.display(),
+                    stderr.trim()
+                );
+            }
+
+            writeln!(file, "{:?}", output).expect("Unable to write to log file");
+
+            output.status.success()
+        }
+        Err(err) => {
+            eprintln!("Failed to convert {}: {}", image_path.display(), err);
+            writeln!(
+                file,
+                "Failed to execute cjxl for {}: {}",
+                image_path.display(),
+                err
+            )
+            .expect("Unable to write to log file");
+
+            false
+        }
+    }
 }
 
 // Select the jxl command to use for different image types.
